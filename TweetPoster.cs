@@ -27,7 +27,7 @@ namespace TweetPoster
         {
             var dao = new DAOTweets();
             var tweet = dao.GetNextTweet();
-            bool posted=false;
+            bool posted;
 
             if (tweet == null)
             {
@@ -38,11 +38,14 @@ namespace TweetPoster
             {
                 if (tweet.type.Equals("post"))
                 {
+                    var text = "Source: " + tweet.captions;
                     var image = await userClient.Upload.UploadTweetImageAsync(tweet.media);
-                    await userClient.Tweets.PublishTweetAsync(new PublishTweetParameters(tweet.captions)
-                    {
-                        Medias = { image }
-                    });
+                    await userClient.Tweets.PublishTweetAsync(
+                        new PublishTweetParameters(text)
+                        {
+                            Medias = { image }
+                        }
+                    );
                 }
                 else if (tweet.type.Equals("retweet"))
                 {
@@ -61,7 +64,7 @@ namespace TweetPoster
             dao.Delete(tweet);
             dao.UpdateStatus(tweet, posted);
 
-            Console.WriteLine("Tweet deleted from db");
+            Console.WriteLine("Tweet posted?: " + posted.ToString());
         }
 
     }
