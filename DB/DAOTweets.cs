@@ -55,7 +55,6 @@ namespace TweetPoster.DB
         {
             var connection = new Connection();
             var SQL = string.Format("update tweetsposted set status='{0}' where id=@id", posted.ToString()[0]);
-            Console.WriteLine(SQL);
             var sqlCommand = new MySqlCommand(SQL);
             sqlCommand.Parameters.AddWithValue("@id", tweet.id);
             try
