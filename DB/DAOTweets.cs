@@ -43,7 +43,7 @@ namespace TweetPoster.DB
             sqlCommand.Parameters.AddWithValue("@id", tweet.id);
             try
             {
-                //connection.ExecuteSQL(sqlCommand);
+                connection.ExecuteSQL(sqlCommand);
             }
             catch (Exception e)
             {
