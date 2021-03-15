@@ -23,48 +23,53 @@ namespace TweetPoster
             userClient = new TwitterClient(consumerKey, consumerSecret, accessToken, accessSecret);
         }
 
-        public async Task PostNextTweet()
+        public async Task<bool> Retweet(Tweet tweet)
         {
-            var dao = new DAOTweets();
-            var tweet = dao.GetNextTweet();
             bool posted;
-
-            if (tweet == null)
-            {
-                Console.WriteLine("There are no tweets yet");
-                return;
-            }
             try
             {
-                if (tweet.type.Equals("post"))
-                {
-                    var text = "Source: " + tweet.captions;
-                    var image = await userClient.Upload.UploadTweetImageAsync(tweet.media);
-                    await userClient.Tweets.PublishTweetAsync(
-                        new PublishTweetParameters(text)
-                        {
-                            Medias = { image }
-                        }
-                    );
-                }
-                else if (tweet.type.Equals("retweet"))
-                {
-                    long tweetID = long.Parse(tweet.captions);
-                    var retweet = await userClient.Tweets.PublishRetweetAsync(tweetID);
-                    if (!retweet.Favorited) await retweet.FavoriteAsync();
-                }
+                long tweetID = long.Parse(tweet.captions);
+                var retweet = await userClient.Tweets.PublishRetweetAsync(tweetID);
+                if (!retweet.Favorited) await retweet.FavoriteAsync();
+                posted = true;
+
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+                posted = false;
+            }
+
+            Console.WriteLine("Tweet posted?: " + posted.ToString());
+
+            return posted;
+        }
+
+        public async Task<bool> PostTweet(Tweet tweet)
+        {
+            bool posted;
+            try
+            {
+                var text = "Source: " + tweet.captions;
+                var image = await userClient.Upload.UploadTweetImageAsync(tweet.media);
+                await userClient.Tweets.PublishTweetAsync(
+                    new PublishTweetParameters(text)
+                    {
+                        Medias = { image }
+                    }
+                );
                 posted = true;
 
             }
             catch(Exception e)
             {
-                Console.Error.WriteLine(e);
+                Console.Error.WriteLine(e.Message);
                 posted = false;
             }
-            dao.Delete(tweet);
-            dao.UpdateStatus(tweet, posted);
 
             Console.WriteLine("Tweet posted?: " + posted.ToString());
+
+            return posted;
         }
 
     }
