@@ -25,32 +25,26 @@ namespace TweetPoster
 
         public async Task<bool> Retweet(Tweet tweet)
         {
-            bool posted;
             try
             {
                 long tweetID = long.Parse(tweet.captions);
                 var retweet = await userClient.Tweets.PublishRetweetAsync(tweetID);
                 if (!retweet.Favorited) await retweet.FavoriteAsync();
-                posted = true;
 
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine(e.Message);
-                posted = false;
+                throw e;
             }
-
-            Console.WriteLine("Tweet posted?: " + posted.ToString());
-
-            return posted;
+            return true;
         }
 
         public async Task<bool> PostTweet(Tweet tweet)
         {
-            bool posted;
             try
             {
-                var text = "Source: " + tweet.captions;
+                var text = ( tweet.type.Equals("post") ? "Source: " : "Source post/account deleted. Tweet ID: " ) + tweet.captions;
                 var image = await userClient.Upload.UploadTweetImageAsync(tweet.media);
                 await userClient.Tweets.PublishTweetAsync(
                     new PublishTweetParameters(text)
@@ -58,18 +52,14 @@ namespace TweetPoster
                         Medias = { image }
                     }
                 );
-                posted = true;
 
             }
             catch(Exception e)
             {
                 Console.Error.WriteLine(e.Message);
-                posted = false;
+                throw e;
             }
-
-            Console.WriteLine("Tweet posted?: " + posted.ToString());
-
-            return posted;
+            return true;
         }
 
     }
